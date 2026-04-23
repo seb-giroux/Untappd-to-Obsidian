@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Untappd → Obsidian</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px;
+      background: #1a1a1a;
+      color: #e8e4dc;
+      width: 360px;
+      min-height: 200px;
+    }
+
+    /* Header */
+    .header {
+      background: #111;
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid #2a2a2a;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header-icon {
+      width: 28px; height: 28px;
+      background: #f5a623;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    .header-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+    }
+    .header-sub {
+      font-size: 11px;
+      color: #666;
+      margin-top: 1px;
+    }
+
+    /* States */
+    .state { padding: 20px 16px; }
+
+    /* Error / not-on-page state */
+    .state-error {
+      text-align: center;
+      padding: 28px 20px;
+    }
+    .state-error .emoji { font-size: 28px; margin-bottom: 10px; }
+    .state-error p { color: #888; font-size: 12px; line-height: 1.6; }
+    .state-error a { color: #f5a623; text-decoration: none; }
+
+    /* Beer preview card */
+    .beer-card {
+      display: flex;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid #2a2a2a;
+    }
+    .beer-img {
+      width: 52px; height: 52px;
+      border-radius: 6px;
+      object-fit: cover;
+      background: #2a2a2a;
+      flex-shrink: 0;
+      border: 1px solid #333;
+    }
+    .beer-img-placeholder {
+      width: 52px; height: 52px;
+      border-radius: 6px;
+      background: #2a2a2a;
+      border: 1px solid #333;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    .beer-info { flex: 1; min-width: 0; }
+    .beer-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .beer-brewery {
+      font-size: 12px;
+      color: #999;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .beer-badges {
+      display: flex;
+      gap: 5px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 20px;
+      background: #2a2a2a;
+      color: #aaa;
+      border: 1px solid #333;
+    }
+    .badge.abv { background: #2d1e06; color: #f5a623; border-color: #4a2e08; }
+    .badge.rating { background: #1a2810; color: #7ec850; border-color: #2d4318; }
+
+    /* Form fields */
+    .form { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+
+    .field-row { display: flex; gap: 8px; }
+    .field { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+    .field label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #666;
+    }
+    .field input, .field select {
+      background: #111;
+      border: 1px solid #2e2e2e;
+      border-radius: 5px;
+      color: #e8e4dc;
+      font-size: 12px;
+      padding: 5px 8px;
+      outline: none;
+      width: 100%;
+      font-family: inherit;
+      transition: border-color 0.15s;
+    }
+    .field input:focus, .field select:focus {
+      border-color: #f5a623;
+    }
+    .field input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.5);
+      cursor: pointer;
+    }
+    .field select option { background: #1a1a1a; }
+
+    /* Star rating */
+    .stars { display: flex; gap: 3px; padding-top: 2px; }
+    .star {
+      font-size: 18px;
+      cursor: pointer;
+      color: #333;
+      transition: color 0.1s;
+      user-select: none;
+      line-height: 1;
+    }
+    .star.on { color: #f5a623; }
+
+    /* Vault folder setting */
+    .vault-setting {
+      padding: 10px 16px;
+      border-top: 1px solid #2a2a2a;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .vault-setting label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #555;
+    }
+    .vault-setting input {
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 5px;
+      color: #777;
+      font-size: 11px;
+      padding: 5px 8px;
+      outline: none;
+      font-family: inherit;
+    }
+    .vault-setting input:focus { border-color: #444; color: #aaa; }
+
+    /* Action buttons */
+    .actions {
+      padding: 12px 16px 14px;
+      border-top: 1px solid #2a2a2a;
+      display: flex;
+      gap: 8px;
+    }
+    .btn {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      border: 1px solid #333;
+      background: #222;
+      color: #aaa;
+      transition: background 0.12s, color 0.12s;
+    }
+    .btn:hover { background: #2a2a2a; color: #ddd; }
+    .btn.primary {
+      background: #f5a623;
+      color: #000;
+      border-color: #f5a623;
+      font-weight: 600;
+    }
+    .btn.primary:hover { background: #e89b1a; }
+    .btn.primary:disabled {
+      background: #4a3510;
+      color: #7a6030;
+      border-color: transparent;
+      cursor: not-allowed;
+    }
+
+    /* Success state */
+    .state-success {
+      text-align: center;
+      padding: 28px 20px;
+    }
+    .state-success .emoji { font-size: 32px; margin-bottom: 10px; }
+    .state-success h3 { font-size: 15px; color: #fff; margin-bottom: 6px; }
+    .state-success p { font-size: 12px; color: #666; line-height: 1.6; }
+
+    /* Loading */
+    .loading { text-align: center; padding: 28px 20px; color: #666; font-size: 12px; }
+
+    /* Notes textarea */
+    .field textarea {
+      background: #111;
+      border: 1px solid #2e2e2e;
+      border-radius: 5px;
+      color: #e8e4dc;
+      font-size: 12px;
+      padding: 5px 8px;
+      outline: none;
+      width: 100%;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 48px;
+      transition: border-color 0.15s;
+    }
+    .field textarea:focus { border-color: #f5a623; }
+
+    .divider { height: 1px; background: #2a2a2a; margin: 0; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">🍺</div>
+  <div>
+    <div class="header-title">Untappd → Obsidian</div>
+    <div class="header-sub">Save to your beer cellar</div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="loading">Loading beer data…</div>
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>
