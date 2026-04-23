@@ -60,12 +60,15 @@ function scrapeBeerData() {
   }
 
   // Rating
-  const rating =
+  let rating =
     getText('.beer-details .rating .num') ||
     getText('.caps[data-rating]') ||
     getAttr('.caps', 'data-rating') ||
     getText('.rating .num') ||
     null;
+  if (rating) {
+    rating = parseFloat(rating).toFixed(2);
+  }
 
   // Description
   const description =

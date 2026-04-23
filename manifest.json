@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Untappd → Obsidian Cellar",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Save any Untappd beer page to your Obsidian beer cellar with one click.",
   "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": ["https://untappd.com/*"],
